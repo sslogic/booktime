@@ -9,6 +9,8 @@ const addGenre = document.getElementById("addGenre");
 const selectedGenres = document.getElementById("selectedGenres");
 const characterSelect = document.getElementById("characterSelect");
 const addSelectedCharacter = document.getElementById("addSelectedCharacter");
+const importPngCard = document.getElementById("importPngCard");
+const importPngInput = document.getElementById("importPngInput");
 const selectedCharacters = document.getElementById("selectedCharacters");
 const startingSituation = document.getElementById("startingSituation");
 const toneSelect = document.getElementById("toneSelect");
@@ -37,12 +39,20 @@ const closeCharacterModal = document.getElementById("closeCharacterModal");
 const cancelCharacter = document.getElementById("cancelCharacter");
 const saveCharacter = document.getElementById("saveCharacter");
 const characterName = document.getElementById("characterName");
+const characterPng = document.getElementById("characterPng");
 const characterRole = document.getElementById("characterRole");
+const characterDescription = document.getElementById("characterDescription");
 const characterPersonality = document.getElementById("characterPersonality");
+const characterScenario = document.getElementById("characterScenario");
+const characterFirstMessage = document.getElementById("characterFirstMessage");
+const characterExamples = document.getElementById("characterExamples");
 const characterRelationships = document.getElementById("characterRelationships");
 const characterVoice = document.getElementById("characterVoice");
 const characterCanon = document.getElementById("characterCanon");
 const characterNotes = document.getElementById("characterNotes");
+const characterTags = document.getElementById("characterTags");
+const characterSystemPrompt = document.getElementById("characterSystemPrompt");
+const characterPostHistory = document.getElementById("characterPostHistory");
 
 let allCharacters = [];
 let pickedCharacters = [];
@@ -212,23 +222,40 @@ function modalLines(value) {
 
 function clearCharacterModal() {
   characterName.value = "";
+  characterPng.value = "";
   characterRole.value = "";
+  characterDescription.value = "";
   characterPersonality.value = "";
+  characterScenario.value = "";
+  characterFirstMessage.value = "";
+  characterExamples.value = "";
   characterRelationships.value = "";
   characterVoice.value = "";
   characterCanon.value = "";
   characterNotes.value = "";
+  characterTags.value = "";
+  characterSystemPrompt.value = "";
+  characterPostHistory.value = "";
 }
 
 async function saveNewCharacter() {
   const card = {
     name: characterName.value.trim(),
     role: characterRole.value.trim(),
+    description: characterDescription.value.trim(),
     personality: modalLines(characterPersonality.value),
+    scenario: characterScenario.value.trim(),
+    first_mes: characterFirstMessage.value.trim(),
+    mes_example: characterExamples.value.trim(),
     relationships: modalLines(characterRelationships.value),
     voice_rules: modalLines(characterVoice.value),
     do_not_change: modalLines(characterCanon.value),
-    notes: characterNotes.value.trim()
+    creator_notes: characterNotes.value.trim(),
+    tags: modalLines(characterTags.value.replaceAll(",", "\n")),
+    system_prompt: characterSystemPrompt.value.trim(),
+    post_history_instructions: characterPostHistory.value.trim(),
+    creator: "Book Time",
+    character_version: "1.0"
   };
   if (!card.name) {
     characterName.focus();
@@ -236,10 +263,14 @@ async function saveNewCharacter() {
   }
   saveCharacter.disabled = true;
   try {
+    let pngBase64 = "";
+    if (characterPng.files && characterPng.files[0]) {
+      pngBase64 = await fileToBase64(characterPng.files[0]);
+    }
     const response = await fetch("/api/characters", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ character: card })
+      body: JSON.stringify({ character: card, pngBase64 })
     });
     const data = await response.json();
     if (!data.ok) {
@@ -260,6 +291,48 @@ async function saveNewCharacter() {
     setStatus(`Could not save character: ${error}`, "status-error");
   } finally {
     saveCharacter.disabled = false;
+  }
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result || "");
+      resolve(result.includes(",") ? result.split(",", 1)[1] ? result.split(",", 2)[1] : result : result);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function importCharacterPng(file) {
+  if (!file) return;
+  setStatus("Importing PNG character card...", "status-working");
+  try {
+    const pngBase64 = await fileToBase64(file);
+    const response = await fetch("/api/characters/import-png", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ filename: file.name, pngBase64 })
+    });
+    const data = await response.json();
+    if (!data.ok) {
+      setStatus(data.error || "Could not import PNG card.", "status-error");
+      return;
+    }
+    allCharacters = data.characters || [];
+    renderCharacterOptions();
+    const imported = data.character;
+    if (imported && !pickedCharacters.some((item) => characterKey(item) === characterKey(imported))) {
+      pickedCharacters.push(imported);
+      renderPickedCharacters();
+    }
+    setStatus(`Imported ${imported.name} from PNG card.`, "status-ready");
+  } catch (error) {
+    setStatus(`PNG import failed: ${error}`, "status-error");
+  } finally {
+    importPngInput.value = "";
   }
 }
 
@@ -361,6 +434,8 @@ fillStructure.addEventListener("click", fillChapterStructure);
 addGenre.addEventListener("click", () => addTextChoice(genreSelect, newGenre, pickedGenres, renderGenres));
 addTone.addEventListener("click", () => addTextChoice(toneSelect, newTone, pickedTones, renderTones));
 addSelectedCharacter.addEventListener("click", addCurrentCharacter);
+importPngCard.addEventListener("click", () => importPngInput.click());
+importPngInput.addEventListener("change", () => importCharacterPng(importPngInput.files[0]));
 openCharacterModal.addEventListener("click", () => characterModal.showModal());
 closeCharacterModal.addEventListener("click", () => characterModal.close());
 cancelCharacter.addEventListener("click", () => characterModal.close());

@@ -16,6 +16,20 @@ Run the web app:
 start_booktime.bat
 ```
 
+This is the normal launcher. It attempts to:
+
+1. start Ollama
+2. start LM Studio
+3. start the LM Studio local server with `lms server start`
+4. start the Book Time web server
+5. open the Book Time page in your browser
+
+Create Desktop and Start Menu shortcuts:
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File install_booktime_shortcuts.ps1
+```
+
 Open setup directly:
 
 ```bat
@@ -45,11 +59,20 @@ http://127.0.0.1:8765/setup.html
 Use the setup page to configure:
 
 - Ollama URL, for example `http://127.0.0.1:11434`
+- Ollama executable, for example `C:\Users\<you>\AppData\Local\Programs\Ollama\ollama.exe`
 - Ollama model, for example `aitraining-odysseus-storyteller-file:latest`
+- LM Studio executable, for example `C:\Users\<you>\AppData\Local\Programs\LM Studio\LM Studio.exe`
 - LM Studio conversations folder, usually `C:\Users\<you>\.lmstudio\conversations`
 - LM Studio user files folder, usually `C:\Users\<you>\.lmstudio\user-files`
-- Book Time local memory folder, default `story_memory`
+- Story and character data storage location, default `story_memory`
 - trigger phrases that activate the watcher
+
+Download links shown on the setup page:
+
+- Ollama: `https://ollama.com/download`
+- LM Studio: `https://lmstudio.ai/download`
+
+That storage location contains transcripts, source files, `latest_seed.md`, `continuity.json`, and `custom_characters.json`.
 
 Config is saved in:
 
@@ -91,6 +114,14 @@ The webpage is a form-based chapter prompt creator with:
 - AI-filled chapter structure
 - JSON schema and final rules
 
+Characters created in the popup are saved as SillyTavern-compatible Character Card V2 JSON (`spec: chara_card_v2`, `spec_version: 2.0`) so they can be reused outside Book Time. Individual character files are written to:
+
+```text
+booktime/story_memory/characters
+```
+
+If you choose a PNG in the character popup, Book Time embeds the character JSON into the PNG using the TavernAI/SillyTavern `chara` tEXt metadata convention. Existing PNG cards with embedded `chara` metadata can also be imported through the character API.
+
 `Fill Structure` asks Ollama to fill the opening, development, complication, choice, and closing hook fields.
 
 `Make LM Studio Prompt` asks Ollama to turn the completed form and latest story memory into a copy-ready LM Studio prompt.
@@ -114,6 +145,26 @@ Point an MCP client at:
 ```bat
 python C:\path\to\booktime\story_mcp_server.py
 ```
+
+## LM Studio Preset Files
+
+Book Time includes pre-setup files for LM Studio writing models:
+
+```text
+booktime/lmstudio_presets/booktime-writer-system-prompt.md
+booktime/lmstudio_presets/booktime-output-schema.json
+booktime/lmstudio_presets/booktime-writer.preset.json
+```
+
+The setup page has an `Install LM Studio Presets` button. It writes:
+
+```text
+C:\Users\<you>\.lmstudio\config-presets\booktime-writer.preset.json
+C:\Users\<you>\.lmstudio\user-files\booktime-writer-system-prompt.md
+C:\Users\<you>\.lmstudio\user-files\booktime-output-schema.json
+```
+
+Restart LM Studio if the preset does not appear immediately.
 
 ## Files
 

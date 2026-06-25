@@ -1,4 +1,4 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-python booktime_server.py --open
+powershell.exe -ExecutionPolicy Bypass -File "%~dp0booktime_launcher.ps1"

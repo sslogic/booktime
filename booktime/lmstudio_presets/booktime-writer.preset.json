@@ -1,0 +1,18 @@
+{
+  "identifier": "@local:booktime-writer",
+  "name": "Book Time Writer",
+  "changed": false,
+  "operation": {
+    "fields": [
+      {
+        "key": "llm.prediction.structured",
+        "value": {
+          "type": "json"
+        }
+      }
+    ]
+  },
+  "load": {
+    "fields": []
+  }
+}

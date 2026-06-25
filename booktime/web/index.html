@@ -56,8 +56,10 @@
               <option value="">Loading characters...</option>
             </select>
             <button id="addSelectedCharacter" type="button">Add</button>
+            <button id="importPngCard" type="button" class="secondary">Import PNG Card</button>
             <button id="openCharacterModal" type="button" class="secondary">New Character</button>
           </div>
+          <input id="importPngInput" type="file" accept="image/png" hidden>
           <div id="selectedCharacters" class="chips"></div>
         </div>
 
@@ -161,10 +163,20 @@ Write Chapter as a complete chapter of 3,000-4,000 words across 4-6 scenes.</tex
       </header>
       <label for="characterName">Name</label>
       <input id="characterName" type="text" autocomplete="off">
+      <label for="characterPng">Character PNG card or portrait</label>
+      <input id="characterPng" type="file" accept="image/png">
       <label for="characterRole">Role</label>
       <input id="characterRole" type="text" autocomplete="off">
+      <label for="characterDescription">Description</label>
+      <textarea id="characterDescription" class="modal-text" placeholder="Appearance, background, permanent facts"></textarea>
       <label for="characterPersonality">Personality</label>
       <textarea id="characterPersonality" class="modal-text" placeholder="One trait per line"></textarea>
+      <label for="characterScenario">Scenario</label>
+      <textarea id="characterScenario" class="modal-text" placeholder="Default situation or story context"></textarea>
+      <label for="characterFirstMessage">First message</label>
+      <textarea id="characterFirstMessage" class="modal-text" placeholder="Optional SillyTavern first_mes"></textarea>
+      <label for="characterExamples">Dialogue examples</label>
+      <textarea id="characterExamples" class="modal-text" placeholder="Optional mes_example"></textarea>
       <label for="characterRelationships">Relationships</label>
       <textarea id="characterRelationships" class="modal-text" placeholder="One relationship fact per line"></textarea>
       <label for="characterVoice">Voice rules</label>
@@ -173,6 +185,12 @@ Write Chapter as a complete chapter of 3,000-4,000 words across 4-6 scenes.</tex
       <textarea id="characterCanon" class="modal-text" placeholder="Canon details that must stay fixed"></textarea>
       <label for="characterNotes">Notes</label>
       <textarea id="characterNotes" class="modal-text" placeholder="Any other useful memory"></textarea>
+      <label for="characterTags">Tags</label>
+      <input id="characterTags" type="text" placeholder="Comma or line separated">
+      <label for="characterSystemPrompt">System prompt override</label>
+      <textarea id="characterSystemPrompt" class="modal-text" placeholder="Optional SillyTavern system_prompt"></textarea>
+      <label for="characterPostHistory">Post-history instructions</label>
+      <textarea id="characterPostHistory" class="modal-text" placeholder="Optional post_history_instructions"></textarea>
       <div class="actions modal-actions">
         <button id="saveCharacter" type="button">Save Character</button>
         <button id="cancelCharacter" type="button" class="secondary">Cancel</button>

@@ -76,6 +76,12 @@ p {
   color: var(--muted);
 }
 
+.field-help {
+  margin-top: -6px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
 .panel {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -132,6 +138,38 @@ pre {
   margin: 0;
   padding: 12px;
   color: var(--muted);
+}
+
+.runtime-status {
+  display: grid;
+  gap: 8px;
+}
+
+.status-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-2);
+  padding: 10px 12px;
+  color: var(--muted);
+}
+
+.status-card strong {
+  color: var(--text);
+}
+
+.status-card.ok {
+  border-color: rgba(101, 195, 179, 0.55);
+}
+
+.status-card.warn {
+  border-color: rgba(240, 179, 90, 0.6);
+}
+
+.status-card a {
+  color: var(--accent);
 }
 
 select,
@@ -192,7 +230,7 @@ input {
 }
 
 .picker-row:has(#characterSelect) {
-  grid-template-columns: minmax(160px, 1fr) auto auto;
+  grid-template-columns: minmax(160px, 1fr) auto auto auto;
 }
 
 .chips {

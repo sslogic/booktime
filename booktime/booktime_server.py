@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import json
+import subprocess
 import sys
 import urllib.error
 import urllib.request
@@ -13,10 +14,12 @@ from story_memory import (
     CONFIG_PATH,
     ROOT,
     custom_characters_path,
+    import_character_png,
     list_characters,
     load_config,
     memory_root,
     read_text,
+    save_character_png,
     save_config,
     seed_path,
     upsert_custom_character,
@@ -24,6 +27,23 @@ from story_memory import (
 
 
 WEB_DIR = ROOT / "web"
+
+
+def preset_dir(config):
+    raw = Path(config.get("lmstudio_preset_dir", "lmstudio_presets"))
+    if not raw.is_absolute():
+        raw = ROOT / raw
+    return raw
+
+
+def preset_summary(config):
+    path = preset_dir(config)
+    files = []
+    if path.exists():
+        for item in sorted(path.glob("*")):
+            if item.is_file():
+                files.append(str(item))
+    return {"dir": str(path), "files": files}
 
 
 def build_prompt(config, raw_prompt, seed_text, mode):
@@ -42,6 +62,8 @@ Return only the final LM Studio prompt text. No explanation before or after.
 
 Mode: {mode}
 Book id: {config["book_id"]}
+LM Studio preset files:
+{json.dumps(preset_summary(config), indent=2)}
 Latest continuity seed:
 <<<SEED
 {seed_tail}
@@ -167,6 +189,63 @@ FORM
 """
 
 
+def command_text(args, timeout=10):
+    try:
+        proc = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=timeout)
+        return {
+            "returncode": proc.returncode,
+            "stdout": proc.stdout.strip(),
+            "stderr": proc.stderr.strip(),
+        }
+    except FileNotFoundError:
+        return {"returncode": 127, "stdout": "", "stderr": f"Not found: {args[0]}"}
+    except subprocess.TimeoutExpired:
+        return {"returncode": 124, "stdout": "", "stderr": "Timed out"}
+
+
+def check_ollama(config):
+    url = config.get("ollama_url", "http://127.0.0.1:11434").rstrip("/")
+    model = config.get("ollama_model", "")
+    result = {
+        "url": url,
+        "model": model,
+        "running": False,
+        "modelAvailable": False,
+        "downloadUrl": "https://ollama.com/download",
+        "message": "",
+    }
+    try:
+        with urllib.request.urlopen(url + "/api/tags", timeout=5) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+        result["running"] = True
+        names = [item.get("name") for item in payload.get("models", [])]
+        result["modelAvailable"] = model in names if model else bool(names)
+        result["models"] = names
+        result["message"] = "Ollama is running." if result["modelAvailable"] else "Ollama is running, but the configured model is not listed."
+    except Exception as exc:
+        result["message"] = f"Ollama is not reachable: {exc}"
+    return result
+
+
+def check_lmstudio(config):
+    exe = config.get("lmstudio_exe_path", "")
+    conversations = config.get("lmstudio_conversations_dir", "")
+    user_files = config.get("lmstudio_user_files_dir", "")
+    server = command_text(["lms", "server", "status"], timeout=10)
+    return {
+        "exePath": exe,
+        "exeExists": Path(exe).exists() if exe else False,
+        "downloadUrl": "https://lmstudio.ai/download",
+        "conversationsDir": conversations,
+        "conversationsDirExists": Path(conversations).exists() if conversations else False,
+        "userFilesDir": user_files,
+        "userFilesDirExists": Path(user_files).exists() if user_files else False,
+        "serverStatus": server,
+        "serverRunning": server["returncode"] == 0 and "not running" not in (server["stdout"] + server["stderr"]).lower(),
+        "message": server["stdout"] or server["stderr"],
+    }
+
+
 class BookTimeHandler(BaseHTTPRequestHandler):
     server_version = "BookTime/2.0"
 
@@ -183,6 +262,8 @@ class BookTimeHandler(BaseHTTPRequestHandler):
             self.send_file(WEB_DIR / "setup.js", "application/javascript; charset=utf-8")
         elif self.path == "/api/config":
             self.handle_get_config()
+        elif self.path == "/api/status":
+            self.handle_status()
         elif self.path == "/api/seed":
             self.handle_seed()
         elif self.path == "/api/characters":
@@ -199,6 +280,10 @@ class BookTimeHandler(BaseHTTPRequestHandler):
             self.handle_structure()
         elif self.path == "/api/characters":
             self.handle_save_character()
+        elif self.path == "/api/characters/import-png":
+            self.handle_import_character_png()
+        elif self.path == "/api/lmstudio/install-presets":
+            self.handle_install_lmstudio_presets()
         else:
             self.send_error(404)
 
@@ -238,14 +323,29 @@ class BookTimeHandler(BaseHTTPRequestHandler):
             "memoryRoot": str(root),
         })
 
+    def handle_status(self):
+        config = load_config()
+        status = {
+            "ok": True,
+            "ollama": check_ollama(config),
+            "lmstudio": check_lmstudio(config),
+            "booktime": {
+                "memoryRoot": str(memory_root(config)),
+                "seedExists": seed_path(config).exists(),
+                "configPath": str(CONFIG_PATH),
+                "presets": preset_summary(config),
+            },
+        }
+        self.send_json(200, status)
+
     def handle_save_config(self):
         try:
             current = load_config()
             body = self.read_json_body()
             allowed = {
                 "book_id", "lmstudio_conversations_dir", "lmstudio_user_files_dir",
-                "ollama_url", "ollama_model", "memory_dir", "booktime_host",
-                "booktime_port", "poll_seconds", "max_analysis_chars",
+                "lmstudio_exe_path", "ollama_exe_path", "ollama_url", "ollama_model", "memory_dir", "booktime_host",
+                "booktime_port", "lmstudio_preset_dir", "poll_seconds", "max_analysis_chars",
                 "require_trigger_for_watch", "trigger_phrases",
             }
             for key, value in body.items():
@@ -280,13 +380,62 @@ class BookTimeHandler(BaseHTTPRequestHandler):
         try:
             body = self.read_json_body()
             config = load_config()
-            character = upsert_custom_character(body.get("character") or body, config)
+            raw_character = body.get("character") or body
+            character = upsert_custom_character(raw_character, config)
+            png_path = None
+            if body.get("pngBase64"):
+                png_path = save_character_png(raw_character, body["pngBase64"], config)
             self.send_json(200, {
                 "ok": True,
                 "character": character,
                 "characters": list_characters(config),
+                "pngPath": png_path,
                 "customPath": str(custom_characters_path(config)),
             })
+        except Exception as exc:
+            self.send_json(400, {"ok": False, "error": str(exc)})
+
+    def handle_import_character_png(self):
+        try:
+            body = self.read_json_body()
+            filename = body.get("filename") or "character.png"
+            data = body.get("pngBase64") or ""
+            if "," in data:
+                data = data.split(",", 1)[1]
+            import base64
+            character = import_character_png(filename, base64.b64decode(data), load_config())
+            self.send_json(200, {"ok": True, "character": character, "characters": list_characters(load_config())})
+        except Exception as exc:
+            self.send_json(400, {"ok": False, "error": str(exc)})
+
+    def handle_install_lmstudio_presets(self):
+        try:
+            config = load_config()
+            lm_root = Path(config.get("lmstudio_conversations_dir", "")).parent
+            if not lm_root.exists():
+                raise RuntimeError("LM Studio folder was not found. Set LM Studio paths first.")
+            config_presets = lm_root / "config-presets"
+            user_files = lm_root / "user-files"
+            config_presets.mkdir(parents=True, exist_ok=True)
+            user_files.mkdir(parents=True, exist_ok=True)
+
+            src_dir = preset_dir(config)
+            preset_src = src_dir / "booktime-writer.preset.json"
+            prompt_src = src_dir / "booktime-writer-system-prompt.md"
+            schema_src = src_dir / "booktime-output-schema.json"
+            for src in (preset_src, prompt_src, schema_src):
+                if not src.exists():
+                    raise RuntimeError(f"Missing preset source file: {src}")
+
+            installed = []
+            preset_dest = config_presets / "booktime-writer.preset.json"
+            prompt_dest = user_files / "booktime-writer-system-prompt.md"
+            schema_dest = user_files / "booktime-output-schema.json"
+            preset_dest.write_text(preset_src.read_text(encoding="utf-8"), encoding="utf-8")
+            prompt_dest.write_text(prompt_src.read_text(encoding="utf-8"), encoding="utf-8")
+            schema_dest.write_text(schema_src.read_text(encoding="utf-8"), encoding="utf-8")
+            installed.extend([str(preset_dest), str(prompt_dest), str(schema_dest)])
+            self.send_json(200, {"ok": True, "installed": installed, "message": "Installed Book Time preset files into LM Studio. Restart LM Studio if the preset does not appear immediately."})
         except Exception as exc:
             self.send_json(400, {"ok": False, "error": str(exc)})
 

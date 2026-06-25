@@ -19,12 +19,19 @@
 
       <div class="panel setup-panel">
         <h2>Local Connections</h2>
+        <div id="runtimeStatus" class="runtime-status"></div>
 
         <label for="ollamaUrl">Ollama URL</label>
         <input id="ollamaUrl" type="text" placeholder="http://127.0.0.1:11434">
 
+        <label for="ollamaExe">Ollama executable</label>
+        <input id="ollamaExe" type="text" placeholder="C:\Users\you\AppData\Local\Programs\Ollama\ollama.exe">
+
         <label for="ollamaModel">Ollama model</label>
         <input id="ollamaModel" type="text" placeholder="aitraining-odysseus-storyteller-file:latest">
+
+        <label for="lmstudioExe">LM Studio executable</label>
+        <input id="lmstudioExe" type="text" placeholder="C:\Users\you\AppData\Local\Programs\LM Studio\LM Studio.exe">
 
         <label for="lmstudioConversations">LM Studio conversations folder</label>
         <input id="lmstudioConversations" type="text" placeholder="C:\Users\you\.lmstudio\conversations">
@@ -32,8 +39,12 @@
         <label for="lmstudioUserFiles">LM Studio user files folder</label>
         <input id="lmstudioUserFiles" type="text" placeholder="C:\Users\you\.lmstudio\user-files">
 
-        <label for="memoryDir">Book Time local memory folder</label>
+        <label for="memoryDir">Story and character data storage location</label>
         <input id="memoryDir" type="text" placeholder="story_memory">
+        <p class="field-help">Stores transcripts, source files, latest_seed.md, continuity.json, and custom_characters.json.</p>
+
+        <label for="presetDir">LM Studio preset files folder</label>
+        <input id="presetDir" type="text" placeholder="lmstudio_presets">
 
         <label for="triggerPhrases">Trigger phrases</label>
         <textarea id="triggerPhrases" class="short-text" placeholder="One phrase per line"></textarea>
@@ -41,6 +52,8 @@
         <div class="actions">
           <button id="saveSetup" type="button">Save Setup</button>
           <button id="reloadSetup" type="button" class="secondary">Reload</button>
+          <button id="checkStatus" type="button" class="secondary">Check Status</button>
+          <button id="installPresets" type="button">Install LM Studio Presets</button>
         </div>
 
         <label>Files</label>
