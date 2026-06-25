@@ -24,7 +24,10 @@ from story_memory import (
 
 
 ROOT = Path(__file__).resolve().parent
-STATE_PATH = ROOT / ".booktime_state.json"
+
+
+def state_path(config):
+    return memory_root(config) / ".booktime_state.json"
 
 
 def safe_slug(text, fallback="conversation"):
@@ -308,15 +311,16 @@ def sync_once(config, conversation_path=None, watch_mode=False):
     transcript = render_transcript(conversation)
     transcript_hash = sha256_text(transcript)
 
-    state = load_json(STATE_PATH, default={}) or {}
+    state_file = state_path(config)
+    state = load_json(state_file, default={}) or {}
     if watch_mode:
         allowed, reason = should_sync_in_watch(config, conversation, state)
         if not allowed:
-            save_json(STATE_PATH, state)
+            save_json(state_file, state)
             print(f"Idle: {conversation['name']} ({reason})")
             return False
         if reason == "trigger phrase detected":
-            save_json(STATE_PATH, state)
+            save_json(state_file, state)
             print(f"Book Time hook started: {conversation['name']}")
 
     prior_hash = state.get("conversation_hashes", {}).get(str(conv_path))
@@ -367,7 +371,7 @@ def sync_once(config, conversation_path=None, watch_mode=False):
     state["last_conversation_path"] = str(conv_path)
     state["last_transcript_path"] = str(transcript_path)
     state["last_seed_path"] = str(seed_path(config))
-    save_json(STATE_PATH, state)
+    save_json(state_file, state)
     print(f"Synced: {conversation['name']}")
     print(f"Transcript: {transcript_path}")
     print(f"Seed: {seed_path(config)}")

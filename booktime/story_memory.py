@@ -9,7 +9,31 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent
-CONFIG_PATH = ROOT / "booktime_config.json"
+
+
+def user_documents_booktime():
+    return Path(os.environ.get("USERPROFILE", str(Path.home()))) / "Documents" / "BookTime"
+
+
+def is_program_files_install():
+    roots = [
+        os.environ.get("ProgramFiles", r"C:\Program Files"),
+        os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"),
+    ]
+    root_text = str(ROOT).lower()
+    return any(root and root_text.startswith(str(Path(root)).lower()) for root in roots)
+
+
+def default_config_path():
+    override = os.environ.get("BOOKTIME_CONFIG_PATH")
+    if override:
+        return Path(override)
+    if is_program_files_install():
+        return user_documents_booktime() / "booktime_config.json"
+    return ROOT / "booktime_config.json"
+
+
+CONFIG_PATH = default_config_path()
 
 
 def load_json(path, default=None):
@@ -34,7 +58,7 @@ def load_config():
     config = load_json(CONFIG_PATH, default={})
     if not config:
         config = {}
-    config.setdefault("memory_dir", "story_memory")
+    config.setdefault("memory_dir", str(user_documents_booktime()) if is_program_files_install() else "story_memory")
     config.setdefault("booktime_host", "127.0.0.1")
     config.setdefault("booktime_port", 8765)
     config.setdefault("ollama_url", "http://127.0.0.1:11434")

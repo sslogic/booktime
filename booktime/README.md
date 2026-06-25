@@ -18,6 +18,18 @@ start_booktime.bat
 
 On a fresh clone, run setup before writing. Book Time does not ship with your machine-specific model paths or hard-coded local model names.
 
+Install Book Time into Windows app locations:
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File install_booktime.ps1
+```
+
+Installed layout:
+
+- App files: `C:\Program Files\BookTime`
+- Book Time memory and setup config: `C:\Users\<you>\Documents\BookTime`
+- Setup config file: `C:\Users\<you>\Documents\BookTime\booktime_config.json`
+
 This is the normal launcher. It attempts to:
 
 1. start Ollama
@@ -109,7 +121,8 @@ That storage location contains transcripts, source files, `latest_seed.md`, `con
 Config is saved in:
 
 ```text
-booktime/booktime_config.json
+C:\Users\<you>\Documents\BookTime\booktime_config.json when installed
+booktime/booktime_config.json when running directly from a source checkout
 ```
 
 ## What It Stores

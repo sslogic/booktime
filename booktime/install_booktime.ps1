@@ -51,7 +51,7 @@ if (-not $DataDir) {
 }
 $InstallDir = [IO.Path]::GetFullPath($InstallDir)
 $DataDir = [IO.Path]::GetFullPath($DataDir)
-$ConfigPath = Join-Path $InstallDir "booktime_config.json"
+$ConfigPath = Join-Path $DataDir "booktime_config.json"
 
 New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
 New-Item -ItemType Directory -Path $DataDir -Force | Out-Null
@@ -74,8 +74,11 @@ $Config = @{}
 if (Test-Path -LiteralPath $ConfigPath) {
     $Config = Read-JsonHashtable $ConfigPath
 } else {
+    $InstalledConfigPath = Join-Path $InstallDir "booktime_config.json"
     $SourceConfigPath = Join-Path $SourceRoot "booktime_config.json"
-    if (Test-Path -LiteralPath $SourceConfigPath) {
+    if (Test-Path -LiteralPath $InstalledConfigPath) {
+        $Config = Read-JsonHashtable $InstalledConfigPath
+    } elseif (Test-Path -LiteralPath $SourceConfigPath) {
         $Config = Read-JsonHashtable $SourceConfigPath
     }
 }
@@ -92,6 +95,11 @@ Set-Default $Config "book_id" "booktime"
 
 $Json = $Config | ConvertTo-Json -Depth 20
 [IO.File]::WriteAllText($ConfigPath, $Json + [Environment]::NewLine, [Text.UTF8Encoding]::new($false))
+
+$CopiedConfigPath = Join-Path $InstallDir "booktime_config.json"
+if (Test-Path -LiteralPath $CopiedConfigPath) {
+    Remove-Item -LiteralPath $CopiedConfigPath -Force
+}
 
 if (-not $NoShortcuts) {
     & (Join-Path $InstallDir "install_booktime_shortcuts.ps1")
