@@ -40,14 +40,23 @@ if ((Test-Path -LiteralPath $StartFolder) -and -not (Get-ChildItem -LiteralPath 
 if ($RemoveLmStudioPresets) {
     try {
         $Config = Get-Content -LiteralPath $ConfigPath -Raw | ConvertFrom-Json
-        $LmRoot = Split-Path -Parent $Config.lmstudio_conversations_dir
-        $Targets = @(
-            (Join-Path $LmRoot "config-presets\booktime-writer.preset.json"),
-            (Join-Path $LmRoot "user-files\booktime-writer-system-prompt.md"),
-            (Join-Path $LmRoot "user-files\booktime-output-schema.json")
-        )
+        $Conversations = [string]$Config.lmstudio_conversations_dir
+        $LmRoot = ""
+        if ($Conversations) {
+            $LmRoot = Split-Path -Parent $Conversations
+        }
+        if (-not $LmRoot) {
+            $LmRoot = Join-Path $env:USERPROFILE ".lmstudio"
+        }
+
+        $Targets = @()
+        if ($LmRoot) {
+            $Targets += Join-Path $LmRoot "config-presets\booktime-writer.preset.json"
+            $Targets += Join-Path $LmRoot "user-files\booktime-writer-system-prompt.md"
+            $Targets += Join-Path $LmRoot "user-files\booktime-output-schema.json"
+        }
         foreach ($Path in $Targets) {
-            if (Test-Path -LiteralPath $Path) {
+            if ($Path -and (Test-Path -LiteralPath $Path)) {
                 Remove-Item -LiteralPath $Path -Force
                 Write-Host "Removed LM Studio file: $Path"
             }
