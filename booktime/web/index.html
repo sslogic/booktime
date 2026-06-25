@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Book Time</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="workspace">
+      <header class="topbar">
+        <div>
+          <h1>Book Time</h1>
+          <p id="seedStatus">Checking local book memory...</p>
+        </div>
+        <div class="top-actions">
+          <button id="refreshSeed" type="button">Refresh Memory</button>
+          <button id="fillStructure" type="button" class="secondary">Fill Structure</button>
+        </div>
+      </header>
+
+      <div class="panel input-panel">
+        <h2>Write Chapter 1</h2>
+        <input id="chapterRequest" type="text" value="Write Chapter 1 of my book.">
+
+        <label for="premise">Premise</label>
+        <textarea id="premise" class="short-text" spellcheck="true"></textarea>
+
+        <div class="field-stack">
+          <label for="genreSelect">Genre</label>
+          <div class="picker-row">
+            <select id="genreSelect">
+              <option value="">Select genre</option>
+              <option>Fantasy</option>
+              <option>Science fiction</option>
+              <option>Horror</option>
+              <option>Thriller</option>
+              <option>Mystery</option>
+              <option>Romance</option>
+              <option>Historical</option>
+              <option>Contemporary</option>
+              <option>Literary</option>
+              <option>Adventure</option>
+            </select>
+            <input id="newGenre" type="text" placeholder="New genre">
+            <button id="addGenre" type="button">Add</button>
+          </div>
+          <div id="selectedGenres" class="chips"></div>
+        </div>
+
+        <div class="field-stack">
+          <label for="characterSelect">Main character</label>
+          <div class="picker-row">
+            <select id="characterSelect">
+              <option value="">Loading characters...</option>
+            </select>
+            <button id="addSelectedCharacter" type="button">Add</button>
+            <button id="openCharacterModal" type="button" class="secondary">New Character</button>
+          </div>
+          <div id="selectedCharacters" class="chips"></div>
+        </div>
+
+        <label for="startingSituation">Starting situation</label>
+        <textarea id="startingSituation" class="short-text" spellcheck="true" placeholder="Filled from local book memory; edit if needed."></textarea>
+
+        <div class="field-stack">
+          <label for="toneSelect">Tone/style</label>
+          <div class="picker-row">
+            <select id="toneSelect">
+              <option value="">Select tone/style</option>
+              <option>Textured and atmospheric</option>
+              <option>Fast paced</option>
+              <option>Dark</option>
+              <option>Quiet and literary</option>
+              <option>Sharp and dialogue driven</option>
+              <option>Dreamlike</option>
+              <option>Gritty</option>
+              <option>Elegant</option>
+            </select>
+            <input id="newTone" type="text" placeholder="New tone/style">
+            <button id="addTone" type="button">Add</button>
+          </div>
+          <div id="selectedTones" class="chips"></div>
+        </div>
+
+        <label for="rawPrompt">Your extra prompt</label>
+        <textarea id="rawPrompt" class="short-text" spellcheck="true"></textarea>
+
+        <label for="wordBank">Word Bank</label>
+        <textarea id="wordBank" class="short-text" spellcheck="true" placeholder="[words here]"></textarea>
+
+        <label for="styleSample">Style Sample</label>
+        <textarea id="styleSample" class="short-text" spellcheck="true">"The rain made the chapel breathe. Water slipped through the broken roof in silver threads, hissing where it touched the candles."</textarea>
+      </div>
+
+      <div class="panel output-panel">
+        <h2>Rules and Structure</h2>
+
+        <label for="sceneRequirements">Scene Requirements</label>
+        <textarea id="sceneRequirements">- Open with a concrete action, not exposition.
+- Include one meaningful choice by the main character.
+- Include one sensory detail in each major beat.
+- Include at least one moment of subtext in dialogue.
+- End with a hook that changes the situation.</textarea>
+
+        <label for="qualityRules">Quality Rules</label>
+        <textarea id="qualityRules">- Avoid generic emotional labels like "sad", "angry", or "scared"; show the feeling physically.
+- Avoid recap paragraphs.
+- Avoid moralizing.
+- Avoid repeating the same sentence rhythm.
+- Do not explain what the reader can infer.</textarea>
+
+        <label for="chapterLength">Chapter Length</label>
+        <textarea id="chapterLength" class="short-text">Write a full chapter of 3,000-4,000 words.
+Do not stop after a short scene.
+Do not summarize the chapter.
+The chapter must contain 4-6 complete scenes.</textarea>
+
+        <label>Chapter Structure</label>
+        <div class="structure-grid">
+          <input id="openingScene" type="text" placeholder="Opening scene">
+          <input id="developmentScene" type="text" placeholder="Development scene">
+          <input id="complicationScene" type="text" placeholder="Complication scene">
+          <input id="choiceScene" type="text" placeholder="Choice scene">
+          <input id="closingHook" type="text" placeholder="Closing hook">
+        </div>
+
+        <label for="outputFormat">JSON Schema / Output Format</label>
+        <textarea id="outputFormat" class="short-text">Return only valid JSON matching the schema.
+The actual prose goes in chapter_text.
+Keep continuity notes short.
+Use next_chapter_setup to prepare the next chapter.</textarea>
+
+        <label for="finalRules">Final Rules</label>
+        <textarea id="finalRules">Do not write a preview, outline, excerpt, or summary.
+Write the complete chapter prose in chapter_text.
+Minimum chapter_text length: 3,000 words.
+If nearing the response limit, continue the chapter until the current scene reaches a natural chapter ending.
+
+Continue chapter_text from the exact last sentence. Keep the same JSON schema.
+
+Write Chapter as a complete chapter of 3,000-4,000 words across 4-6 scenes.</textarea>
+
+        <div class="actions">
+          <button id="preparePrompt" type="button">Make LM Studio Prompt</button>
+          <button id="copyPrompt" type="button" disabled>Copy Output</button>
+        </div>
+
+        <label for="preparedPrompt">Copy this into LM Studio</label>
+        <textarea id="preparedPrompt" readonly placeholder="Your LM Studio-ready prompt will appear here."></textarea>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="characterModal">
+    <form method="dialog" class="modal-card">
+      <header class="modal-header">
+        <h2>New Character</h2>
+        <button id="closeCharacterModal" type="button" class="icon-button">X</button>
+      </header>
+      <label for="characterName">Name</label>
+      <input id="characterName" type="text" autocomplete="off">
+      <label for="characterRole">Role</label>
+      <input id="characterRole" type="text" autocomplete="off">
+      <label for="characterPersonality">Personality</label>
+      <textarea id="characterPersonality" class="modal-text" placeholder="One trait per line"></textarea>
+      <label for="characterRelationships">Relationships</label>
+      <textarea id="characterRelationships" class="modal-text" placeholder="One relationship fact per line"></textarea>
+      <label for="characterVoice">Voice rules</label>
+      <textarea id="characterVoice" class="modal-text" placeholder="How this character speaks, reacts, or behaves"></textarea>
+      <label for="characterCanon">Do not change</label>
+      <textarea id="characterCanon" class="modal-text" placeholder="Canon details that must stay fixed"></textarea>
+      <label for="characterNotes">Notes</label>
+      <textarea id="characterNotes" class="modal-text" placeholder="Any other useful memory"></textarea>
+      <div class="actions modal-actions">
+        <button id="saveCharacter" type="button">Save Character</button>
+        <button id="cancelCharacter" type="button" class="secondary">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Book Time Setup</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="setup-shell">
+      <header class="topbar">
+        <div>
+          <h1>Book Time Setup</h1>
+          <p id="setupStatus">Loading current settings...</p>
+        </div>
+        <a class="button-link" href="/">Open Book Time</a>
+      </header>
+
+      <div class="panel setup-panel">
+        <h2>Local Connections</h2>
+
+        <label for="ollamaUrl">Ollama URL</label>
+        <input id="ollamaUrl" type="text" placeholder="http://127.0.0.1:11434">
+
+        <label for="ollamaModel">Ollama model</label>
+        <input id="ollamaModel" type="text" placeholder="aitraining-odysseus-storyteller-file:latest">
+
+        <label for="lmstudioConversations">LM Studio conversations folder</label>
+        <input id="lmstudioConversations" type="text" placeholder="C:\Users\you\.lmstudio\conversations">
+
+        <label for="lmstudioUserFiles">LM Studio user files folder</label>
+        <input id="lmstudioUserFiles" type="text" placeholder="C:\Users\you\.lmstudio\user-files">
+
+        <label for="memoryDir">Book Time local memory folder</label>
+        <input id="memoryDir" type="text" placeholder="story_memory">
+
+        <label for="triggerPhrases">Trigger phrases</label>
+        <textarea id="triggerPhrases" class="short-text" placeholder="One phrase per line"></textarea>
+
+        <div class="actions">
+          <button id="saveSetup" type="button">Save Setup</button>
+          <button id="reloadSetup" type="button" class="secondary">Reload</button>
+        </div>
+
+        <label>Files</label>
+        <pre id="setupFiles"></pre>
+      </div>
+    </section>
+  </main>
+  <script src="/setup.js"></script>
+</body>
+</html>
