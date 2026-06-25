@@ -15,6 +15,7 @@ from story_memory import (
     ROOT,
     custom_characters_path,
     import_character_png,
+    import_character_json,
     list_characters,
     load_config,
     memory_root,
@@ -375,6 +376,8 @@ class BookTimeHandler(BaseHTTPRequestHandler):
             self.handle_save_character()
         elif self.path == "/api/characters/import-png":
             self.handle_import_character_png()
+        elif self.path == "/api/characters/import-json":
+            self.handle_import_character_json()
         elif self.path == "/api/lmstudio/install-presets":
             self.handle_install_lmstudio_presets()
         elif self.path == "/api/browse":
@@ -516,6 +519,21 @@ class BookTimeHandler(BaseHTTPRequestHandler):
             import base64
             character = import_character_png(filename, base64.b64decode(data), load_config())
             self.send_json(200, {"ok": True, "character": character, "characters": list_characters(load_config())})
+        except Exception as exc:
+            self.send_json(400, {"ok": False, "error": str(exc)})
+
+    def handle_import_character_json(self):
+        try:
+            body = self.read_json_body()
+            filename = body.get("filename") or "character.json"
+            text = body.get("jsonText") or ""
+            imported = import_character_json(filename, text, load_config())
+            self.send_json(200, {
+                "ok": True,
+                "character": imported[0],
+                "characters": list_characters(load_config()),
+                "importedCount": len(imported),
+            })
         except Exception as exc:
             self.send_json(400, {"ok": False, "error": str(exc)})
 

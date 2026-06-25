@@ -11,7 +11,9 @@ const selectedGenres = document.getElementById("selectedGenres");
 const characterSelect = document.getElementById("characterSelect");
 const addSelectedCharacter = document.getElementById("addSelectedCharacter");
 const importPngCard = document.getElementById("importPngCard");
+const importJsonCard = document.getElementById("importJsonCard");
 const importPngInput = document.getElementById("importPngInput");
+const importJsonInput = document.getElementById("importJsonInput");
 const selectedCharacters = document.getElementById("selectedCharacters");
 const startingSituation = document.getElementById("startingSituation");
 const toneSelect = document.getElementById("toneSelect");
@@ -351,6 +353,15 @@ function fileToBase64(file) {
   });
 }
 
+function fileToText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = reject;
+    reader.readAsText(file);
+  });
+}
+
 async function importCharacterPng(file) {
   if (!file) return;
   setStatus("Importing PNG character card...", "status-working");
@@ -379,6 +390,38 @@ async function importCharacterPng(file) {
     setStatus(`PNG import failed: ${error}`, "status-error");
   } finally {
     importPngInput.value = "";
+  }
+}
+
+async function importCharacterJson(file) {
+  if (!file) return;
+  setStatus("Importing JSON character card...", "status-working");
+  try {
+    const jsonText = await fileToText(file);
+    const response = await fetch("/api/characters/import-json", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ filename: file.name, jsonText })
+    });
+    const data = await response.json();
+    if (!data.ok) {
+      setStatus(data.error || "Could not import JSON card.", "status-error");
+      return;
+    }
+    allCharacters = data.characters || [];
+    renderCharacterOptions();
+    const imported = data.character;
+    if (imported && !pickedCharacters.some((item) => characterKey(item) === characterKey(imported))) {
+      pickedCharacters.push(imported);
+      renderPickedCharacters();
+      saveDraft(false);
+    }
+    const count = data.importedCount || 1;
+    setStatus(`Imported ${count} JSON character card${count === 1 ? "" : "s"}.`, "status-ready");
+  } catch (error) {
+    setStatus(`JSON import failed: ${error}`, "status-error");
+  } finally {
+    importJsonInput.value = "";
   }
 }
 
@@ -539,7 +582,9 @@ toneSelect.addEventListener("change", () => {
 });
 addSelectedCharacter.addEventListener("click", addCurrentCharacter);
 importPngCard.addEventListener("click", () => importPngInput.click());
+importJsonCard.addEventListener("click", () => importJsonInput.click());
 importPngInput.addEventListener("change", () => importCharacterPng(importPngInput.files[0]));
+importJsonInput.addEventListener("change", () => importCharacterJson(importJsonInput.files[0]));
 openCharacterModal.addEventListener("click", () => characterModal.showModal());
 closeCharacterModal.addEventListener("click", () => characterModal.close());
 cancelCharacter.addEventListener("click", () => characterModal.close());

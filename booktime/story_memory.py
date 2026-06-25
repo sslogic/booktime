@@ -247,6 +247,34 @@ def import_character_png(filename, png_bytes, config=None):
     return flatten_character(card)
 
 
+def import_character_json(filename, text, config=None):
+    cfg = config or load_config()
+    payload = json.loads(text)
+    if isinstance(payload, list):
+        cards = payload
+    elif isinstance(payload, dict) and isinstance(payload.get("characters"), list):
+        cards = payload["characters"]
+    else:
+        cards = [payload]
+
+    imported = []
+    for card in cards:
+        if not isinstance(card, dict):
+            continue
+        character = upsert_custom_character(card, cfg)
+        st_card = to_sillytavern_card(character)
+        flat = flatten_character(st_card)
+        name = flat.get("name") or Path(filename).stem
+        safe_name = "".join(ch if ch.isalnum() or ch in "._-" else "-" for ch in name).strip("-") or "character"
+        char_dir = memory_root(cfg) / "characters"
+        char_dir.mkdir(parents=True, exist_ok=True)
+        save_json(char_dir / f"{safe_name}.json", st_card)
+        imported.append(character)
+    if not imported:
+        raise ValueError("JSON did not contain a usable character card.")
+    return imported
+
+
 def save_character_png(card, png_base64, config=None):
     cfg = config or load_config()
     png_bytes = base64.b64decode(png_base64)

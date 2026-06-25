@@ -258,7 +258,7 @@ input {
 }
 
 .picker-row:has(#characterSelect) {
-  grid-template-columns: minmax(160px, 1fr) auto auto auto;
+  grid-template-columns: minmax(180px, 1fr) repeat(4, auto);
 }
 
 .chips {
