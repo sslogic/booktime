@@ -103,6 +103,18 @@ function addTextChoice(select, input, list, renderer) {
   savePersistentLists();
 }
 
+function addSelectedChoice(select, list, renderer) {
+  const value = (select.value || "").trim();
+  if (!value) return;
+  if (!list.some((item) => key(item) === key(value))) {
+    list.push(value);
+    list.sort((a, b) => a.localeCompare(b));
+  }
+  select.value = "";
+  renderer();
+  savePersistentLists();
+}
+
 function renderGenres() {
   renderTextChips(selectedGenres, pickedGenres, (value) => {
     pickedGenres = pickedGenres.filter((item) => key(item) !== key(value));
@@ -433,6 +445,8 @@ refreshSeed.addEventListener("click", checkSeed);
 fillStructure.addEventListener("click", fillChapterStructure);
 addGenre.addEventListener("click", () => addTextChoice(genreSelect, newGenre, pickedGenres, renderGenres));
 addTone.addEventListener("click", () => addTextChoice(toneSelect, newTone, pickedTones, renderTones));
+genreSelect.addEventListener("change", () => addSelectedChoice(genreSelect, pickedGenres, renderGenres));
+toneSelect.addEventListener("change", () => addSelectedChoice(toneSelect, pickedTones, renderTones));
 addSelectedCharacter.addEventListener("click", addCurrentCharacter);
 importPngCard.addEventListener("click", () => importPngInput.click());
 importPngInput.addEventListener("change", () => importCharacterPng(importPngInput.files[0]));
