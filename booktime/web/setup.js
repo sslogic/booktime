@@ -2,6 +2,8 @@ const setupStatus = document.getElementById("setupStatus");
 const ollamaUrl = document.getElementById("ollamaUrl");
 const ollamaExe = document.getElementById("ollamaExe");
 const ollamaModel = document.getElementById("ollamaModel");
+const assistantModelDirs = document.getElementById("assistantModelDirs");
+const ollamaTimeout = document.getElementById("ollamaTimeout");
 const lmstudioExe = document.getElementById("lmstudioExe");
 const lmstudioConversations = document.getElementById("lmstudioConversations");
 const lmstudioUserFiles = document.getElementById("lmstudioUserFiles");
@@ -33,6 +35,8 @@ async function loadSetup() {
     ollamaUrl.value = config.ollama_url || "";
     ollamaExe.value = config.ollama_exe_path || "";
     ollamaModel.value = config.ollama_model || "";
+    assistantModelDirs.value = (config.assistant_model_dirs || []).join("\n");
+    ollamaTimeout.value = config.ollama_timeout_seconds || 45;
     lmstudioExe.value = config.lmstudio_exe_path || "";
     lmstudioConversations.value = config.lmstudio_conversations_dir || "";
     lmstudioUserFiles.value = config.lmstudio_user_files_dir || "";
@@ -66,7 +70,11 @@ async function loadStatus() {
       statusLine("LM Studio", !!lmstudio.exeExists, lmstudio.exeExists ? `Found: ${lmstudio.exePath}` : "LM Studio is not installed or path is not set.", lmstudio.exeExists ? "" : lmstudio.downloadUrl),
       statusLine("LM Studio server", !!lmstudio.serverRunning, lmstudio.serverRunning ? "Server is running." : "Start/load your LM Studio writing model if needed.", ""),
       statusLine("Book Time memory", !!booktime.seedExists, booktime.seedExists ? `Seed exists in ${booktime.memoryRoot}` : `No seed yet in ${booktime.memoryRoot}. Run the watcher or one-time sync.`, ""),
-      statusLine("LM Studio presets", !!(booktime.presets && booktime.presets.files && booktime.presets.files.length), booktime.presets ? `Preset folder: ${booktime.presets.dir}` : "Preset folder not found.", "")
+      statusLine("LM Studio presets", !!(booktime.presets && booktime.presets.files && booktime.presets.files.length), booktime.presets ? `Preset folder: ${booktime.presets.dir}` : "Preset folder not found.", ""),
+      ...(booktime.localAssistantModels || []).map((entry) => {
+        const message = `${entry.usable.length} usable GGUF, ${entry.projectors.length} projector, ${entry.partial.length} partial download in ${entry.dir}`;
+        return statusLine("Local assistant files", entry.exists && entry.usable.length > 0, message, "");
+      })
     ].join("");
   } catch (error) {
     runtimeStatus.innerHTML = statusLine("Status", false, `Could not check status: ${error}`, "");
@@ -81,6 +89,8 @@ async function save() {
       ollama_url: ollamaUrl.value.trim(),
       ollama_exe_path: ollamaExe.value.trim(),
       ollama_model: ollamaModel.value.trim(),
+      assistant_model_dirs: assistantModelDirs.value.split("\n").map((line) => line.trim()).filter(Boolean),
+      ollama_timeout_seconds: Number(ollamaTimeout.value || 45),
       lmstudio_exe_path: lmstudioExe.value.trim(),
       lmstudio_conversations_dir: lmstudioConversations.value.trim(),
       lmstudio_user_files_dir: lmstudioUserFiles.value.trim(),

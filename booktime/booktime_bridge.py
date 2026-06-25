@@ -197,7 +197,7 @@ def call_ollama(config, prompt):
         headers={"Content-Type": "application/json"},
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=600) as resp:
+    with urllib.request.urlopen(req, timeout=int(config.get("ollama_timeout_seconds", 120))) as resp:
         payload = json.loads(resp.read().decode("utf-8"))
     return payload.get("response", "").strip()
 

@@ -30,6 +30,22 @@ Create Desktop and Start Menu shortcuts:
 powershell.exe -ExecutionPolicy Bypass -File install_booktime_shortcuts.ps1
 ```
 
+Remove Desktop and Start Menu shortcuts:
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File uninstall_booktime_shortcuts.ps1
+```
+
+Optional uninstall flags:
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File uninstall_booktime_shortcuts.ps1 -StopServer
+powershell.exe -ExecutionPolicy Bypass -File uninstall_booktime_shortcuts.ps1 -RemoveLmStudioPresets
+powershell.exe -ExecutionPolicy Bypass -File uninstall_booktime_shortcuts.ps1 -RemoveStoryData
+```
+
+`-RemoveStoryData` only removes story data when the configured storage location is inside the Book Time folder.
+
 Open setup directly:
 
 ```bat
@@ -60,7 +76,9 @@ Use the setup page to configure:
 
 - Ollama URL, for example `http://127.0.0.1:11434`
 - Ollama executable, for example `C:\Users\<you>\AppData\Local\Programs\Ollama\ollama.exe`
-- Ollama model, for example `aitraining-odysseus-storyteller-file:latest`
+- Ollama assistant model for Book Time prompt-prep, for example `odysseus-gemma:latest`
+- Local assistant model folders for status reporting when you have GGUF files to import into Ollama or LM Studio
+- Ollama prompt timeout, default `45` seconds so the web page falls back instead of hanging on a slow local model
 - LM Studio executable, for example `C:\Users\<you>\AppData\Local\Programs\LM Studio\LM Studio.exe`
 - LM Studio conversations folder, usually `C:\Users\<you>\.lmstudio\conversations`
 - LM Studio user files folder, usually `C:\Users\<you>\.lmstudio\user-files`

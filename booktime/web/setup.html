@@ -27,8 +27,14 @@
         <label for="ollamaExe">Ollama executable</label>
         <input id="ollamaExe" type="text" placeholder="C:\Users\you\AppData\Local\Programs\Ollama\ollama.exe">
 
-        <label for="ollamaModel">Ollama model</label>
-        <input id="ollamaModel" type="text" placeholder="aitraining-odysseus-storyteller-file:latest">
+        <label for="ollamaModel">Ollama assistant model</label>
+        <input id="ollamaModel" type="text" placeholder="odysseus-gemma:latest">
+
+        <label for="assistantModelDirs">Local assistant model folders</label>
+        <textarea id="assistantModelDirs" class="short-text" placeholder="One folder per line"></textarea>
+
+        <label for="ollamaTimeout">Ollama prompt timeout seconds</label>
+        <input id="ollamaTimeout" type="number" min="10" max="900" step="5" placeholder="45">
 
         <label for="lmstudioExe">LM Studio executable</label>
         <input id="lmstudioExe" type="text" placeholder="C:\Users\you\AppData\Local\Programs\LM Studio\LM Studio.exe">

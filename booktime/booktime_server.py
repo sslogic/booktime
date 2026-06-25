@@ -46,6 +46,28 @@ def preset_summary(config):
     return {"dir": str(path), "files": files}
 
 
+def local_assistant_model_summary(config):
+    dirs = config.get("assistant_model_dirs", [])
+    if isinstance(dirs, str):
+        dirs = [dirs]
+    results = []
+    for raw in dirs:
+        folder = Path(raw)
+        entry = {"dir": str(folder), "exists": folder.exists(), "usable": [], "projectors": [], "partial": []}
+        if folder.exists():
+            for item in sorted(folder.glob("*.gguf*")):
+                record = {"path": str(item), "name": item.name, "bytes": item.stat().st_size}
+                lower = item.name.lower()
+                if lower.endswith(".part"):
+                    entry["partial"].append(record)
+                elif lower.startswith("mmproj-"):
+                    entry["projectors"].append(record)
+                elif lower.endswith(".gguf"):
+                    entry["usable"].append(record)
+        results.append(entry)
+    return results
+
+
 def build_prompt(config, raw_prompt, seed_text, mode):
     seed_tail = seed_text[-30000:]
     return f"""You are Book Time, a prompt-preparation assistant for an LM Studio fiction-writing workflow.
@@ -334,6 +356,7 @@ class BookTimeHandler(BaseHTTPRequestHandler):
                 "seedExists": seed_path(config).exists(),
                 "configPath": str(CONFIG_PATH),
                 "presets": preset_summary(config),
+                "localAssistantModels": local_assistant_model_summary(config),
             },
         }
         self.send_json(200, status)
@@ -344,8 +367,8 @@ class BookTimeHandler(BaseHTTPRequestHandler):
             body = self.read_json_body()
             allowed = {
                 "book_id", "lmstudio_conversations_dir", "lmstudio_user_files_dir",
-                "lmstudio_exe_path", "ollama_exe_path", "ollama_url", "ollama_model", "memory_dir", "booktime_host",
-                "booktime_port", "lmstudio_preset_dir", "poll_seconds", "max_analysis_chars",
+                "lmstudio_exe_path", "ollama_exe_path", "ollama_url", "ollama_model", "assistant_model_dirs", "memory_dir", "booktime_host",
+                "booktime_port", "lmstudio_preset_dir", "ollama_timeout_seconds", "poll_seconds", "max_analysis_chars",
                 "require_trigger_for_watch", "trigger_phrases",
             }
             for key, value in body.items():
