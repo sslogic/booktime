@@ -91,8 +91,16 @@ Download links shown on the setup page:
 
 - Ollama: `https://ollama.com/download`
 - LM Studio: `https://lmstudio.ai/download`
+- LM Studio writing model you are using: `https://huggingface.co/DavidAU/Gemma-The-Writer-N-Restless-Quill-10B-Uncensored-GGUF`
+- Small Book Time assistant model option: `https://huggingface.co/lmstudio-community/Qwen2.5-0.5B-Instruct-GGUF/tree/main`
 
 If you have a local GGUF you want to use as the Book Time assistant, import it into Ollama first, then select the resulting Ollama model name in setup.
+
+When LM Studio is running, the setup page also checks `lms ps` and shows the currently loaded writing model. If it sees `gemma-the-writer-n-restless-quill-10b-uncensored`, it shows the matching Hugging Face download link and this optional Ollama command:
+
+```powershell
+ollama run hf.co/DavidAU/Gemma-The-Writer-N-Restless-Quill-10B-Uncensored-GGUF:Q4_K_M
+```
 
 That storage location contains transcripts, source files, `latest_seed.md`, `continuity.json`, and `custom_characters.json`.
 

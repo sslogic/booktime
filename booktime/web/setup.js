@@ -56,6 +56,19 @@ function statusLine(label, ok, message, url) {
   return `<div class="${ok ? "status-card ok" : "status-card warn"}"><strong>${label}</strong><span>${message}${link}</span></div>`;
 }
 
+function modelStatusLines(lmstudio) {
+  const loaded = lmstudio.loadedModels || [];
+  if (!loaded.length) {
+    return [statusLine("LM Studio writing model", false, "No loaded LM Studio model found. Load the writing model in LM Studio.", "")];
+  }
+  return loaded.map((model) => {
+    const download = model.download || {};
+    const details = [model.model || model.identifier, model.status, model.size, model.context ? `${model.context} context` : ""].filter(Boolean).join(" | ");
+    const command = download.ollama ? ` Ollama pull/run: ${download.ollama}` : "";
+    return statusLine("LM Studio writing model", true, `${details}${command}`, download.url || "");
+  });
+}
+
 async function loadStatus() {
   runtimeStatus.innerHTML = "<div class=\"status-card\">Checking runtime status...</div>";
   try {
@@ -69,6 +82,7 @@ async function loadStatus() {
       statusLine("Ollama model", !!ollama.modelAvailable, ollama.modelAvailable ? `Model ready: ${ollama.model}` : `Load or pull model: ${ollama.model || "not set"}`, ""),
       statusLine("LM Studio", !!lmstudio.exeExists, lmstudio.exeExists ? `Found: ${lmstudio.exePath}` : "LM Studio is not installed or path is not set.", lmstudio.exeExists ? "" : lmstudio.downloadUrl),
       statusLine("LM Studio server", !!lmstudio.serverRunning, lmstudio.serverRunning ? "Server is running." : "Start/load your LM Studio writing model if needed.", ""),
+      ...modelStatusLines(lmstudio),
       statusLine("Book Time memory", !!booktime.seedExists, booktime.seedExists ? `Seed exists in ${booktime.memoryRoot}` : `No seed yet in ${booktime.memoryRoot}. Run the watcher or one-time sync.`, ""),
       statusLine("LM Studio presets", !!(booktime.presets && booktime.presets.files && booktime.presets.files.length), booktime.presets ? `Preset folder: ${booktime.presets.dir}` : "Preset folder not found.", ""),
       ...(booktime.localAssistantModels || []).map((entry) => {

@@ -68,6 +68,42 @@ def local_assistant_model_summary(config):
     return results
 
 
+def known_model_downloads():
+    return {
+        "gemma-the-writer-n-restless-quill-10b-uncensored": {
+            "label": "Gemma The Writer N Restless Quill 10B Uncensored GGUF",
+            "url": "https://huggingface.co/DavidAU/Gemma-The-Writer-N-Restless-Quill-10B-Uncensored-GGUF",
+            "ollama": "ollama run hf.co/DavidAU/Gemma-The-Writer-N-Restless-Quill-10B-Uncensored-GGUF:Q4_K_M",
+        },
+        "qwen2.5-0.5b-instruct": {
+            "label": "Qwen2.5 0.5B Instruct GGUF",
+            "url": "https://huggingface.co/lmstudio-community/Qwen2.5-0.5B-Instruct-GGUF/tree/main",
+            "ollama": "",
+        },
+    }
+
+
+def parse_lms_ps(stdout):
+    models = []
+    for line in stdout.splitlines():
+        line = line.strip()
+        if not line or line.startswith("IDENTIFIER"):
+            continue
+        parts = [part.strip() for part in line.split("  ") if part.strip()]
+        if len(parts) >= 2:
+            downloads = known_model_downloads()
+            item = {
+                "identifier": parts[0],
+                "model": parts[1],
+                "status": parts[2] if len(parts) > 2 else "",
+                "size": parts[3] if len(parts) > 3 else "",
+                "context": parts[4] if len(parts) > 4 else "",
+            }
+            item["download"] = downloads.get(item["identifier"].lower()) or downloads.get(item["model"].lower()) or {}
+            models.append(item)
+    return models
+
+
 def build_prompt(config, raw_prompt, seed_text, mode):
     seed_tail = seed_text[-30000:]
     return f"""You are Book Time, a prompt-preparation assistant for an LM Studio fiction-writing workflow.
@@ -259,6 +295,7 @@ def check_lmstudio(config):
     conversations = config.get("lmstudio_conversations_dir", "")
     user_files = config.get("lmstudio_user_files_dir", "")
     server = command_text(["lms", "server", "status"], timeout=10)
+    loaded = command_text(["lms", "ps"], timeout=10)
     return {
         "exePath": exe,
         "exeExists": Path(exe).exists() if exe else False,
@@ -270,6 +307,8 @@ def check_lmstudio(config):
         "serverStatus": server,
         "serverRunning": server["returncode"] == 0 and "not running" not in (server["stdout"] + server["stderr"]).lower(),
         "message": server["stdout"] or server["stderr"],
+        "loadedModels": parse_lms_ps(loaded["stdout"]) if loaded["returncode"] == 0 else [],
+        "loadedModelsRaw": loaded,
     }
 
 
