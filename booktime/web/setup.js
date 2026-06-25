@@ -44,7 +44,7 @@ async function loadSetup() {
     memoryDir.value = config.memory_dir || "story_memory";
     presetDir.value = config.lmstudio_preset_dir || "lmstudio_presets";
     triggerPhrases.value = (config.trigger_phrases || []).join("\n");
-    setupFiles.textContent = `Config: ${data.configPath}\nMemory: ${data.memoryRoot}`;
+    setupFiles.textContent = `Config file: ${data.configPath}\nBook Time memory folder: ${data.memoryRoot}`;
     setStatus("Setup loaded.", "status-ready");
     await loadStatus();
   } catch (error) {
@@ -139,7 +139,7 @@ async function loadStatus() {
       statusLine("LM Studio", !!lmstudio.exeExists, lmstudio.exeExists ? `Found: ${lmstudio.exePath}` : "LM Studio is not installed or path is not set.", lmstudio.exeExists ? "" : lmstudio.downloadUrl),
       statusLine("LM Studio server", !!lmstudio.serverRunning, lmstudio.serverRunning ? "Server is running." : "Start/load your LM Studio writing model if needed.", ""),
       ...modelStatusLines(lmstudio),
-      statusLine("Book Time memory", !!booktime.seedExists, booktime.seedExists ? `Seed exists in ${booktime.memoryRoot}` : `No seed yet in ${booktime.memoryRoot}. Run the watcher or one-time sync.`, ""),
+      statusLine("Book Time memory folder", !!booktime.seedExists, booktime.seedExists ? `Active memory folder: ${booktime.memoryRoot}` : `No seed yet. Active memory folder: ${booktime.memoryRoot}`, ""),
       statusLine("LM Studio presets", !!(booktime.presets && booktime.presets.files && booktime.presets.files.length), booktime.presets ? `Preset folder: ${booktime.presets.dir}` : "Preset folder not found.", ""),
       ...(booktime.localAssistantModels || []).map((entry) => {
         const message = `${entry.usable.length} usable GGUF, ${entry.projectors.length} projector, ${entry.partial.length} partial download in ${entry.dir}`;

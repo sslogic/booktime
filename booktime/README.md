@@ -84,10 +84,10 @@ Use the setup page to configure:
 - LM Studio executable, for example `C:\Users\<you>\AppData\Local\Programs\LM Studio\LM Studio.exe`
 - LM Studio conversations folder, usually `C:\Users\<you>\.lmstudio\conversations`
 - LM Studio user files folder, usually `C:\Users\<you>\.lmstudio\user-files`
-- Story and character data storage location, default `story_memory`
+- Book Time memory folder, default `story_memory`
 - trigger phrases that activate the watcher
 
-The setup page has `Browse` buttons for executable and folder paths. They open a local Windows picker and write the selected full path into the setup field.
+The setup page has `Browse` buttons for executable and folder paths. The `Book Time Memory` section is where you choose the folder that stores story transcripts, continuity memory, character data, and character PNG exports. The picker opens a local Windows dialog and writes the selected full path into the setup field.
 
 Download links shown on the setup page:
 

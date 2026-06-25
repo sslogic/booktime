@@ -60,17 +60,21 @@
           <button type="button" class="secondary browse-button" data-target="lmstudioUserFiles" data-mode="dir" data-title="Select LM Studio user files folder">Browse</button>
         </div>
 
-        <label for="memoryDir">Story and character data storage location</label>
-        <div class="path-row">
-          <input id="memoryDir" type="text" placeholder="story_memory">
-          <button type="button" class="secondary browse-button" data-target="memoryDir" data-mode="dir" data-title="Select story and character data folder">Browse</button>
-        </div>
-        <p class="field-help">Stores transcripts, source files, latest_seed.md, continuity.json, and custom_characters.json.</p>
-
         <label for="presetDir">LM Studio preset files folder</label>
         <div class="path-row">
           <input id="presetDir" type="text" placeholder="lmstudio_presets">
           <button type="button" class="secondary browse-button" data-target="presetDir" data-mode="dir" data-title="Select Book Time preset files folder">Browse</button>
+        </div>
+
+        <div class="setup-section">
+          <h2>Book Time Memory</h2>
+
+          <label for="memoryDir">Book Time memory folder</label>
+          <div class="path-row">
+            <input id="memoryDir" type="text" placeholder="story_memory">
+            <button type="button" class="secondary browse-button" data-target="memoryDir" data-mode="dir" data-title="Select Book Time memory folder">Browse</button>
+          </div>
+          <p class="field-help">This is where Book Time stores story transcripts, source files, latest_seed.md, continuity.json, custom_characters.json, and SillyTavern character PNG exports.</p>
         </div>
 
         <label for="triggerPhrases">Trigger phrases</label>

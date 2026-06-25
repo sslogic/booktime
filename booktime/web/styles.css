@@ -203,6 +203,14 @@ input {
   min-height: 74px;
 }
 
+.setup-section {
+  display: grid;
+  gap: 10px;
+  border-top: 1px solid var(--line);
+  margin-top: 8px;
+  padding-top: 16px;
+}
+
 .path-row {
   display: grid;
   grid-template-columns: minmax(220px, 1fr) auto;
