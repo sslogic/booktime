@@ -87,6 +87,8 @@ Use the setup page to configure:
 - Story and character data storage location, default `story_memory`
 - trigger phrases that activate the watcher
 
+The setup page has `Browse` buttons for executable and folder paths. They open a local Windows picker and write the selected full path into the setup field.
+
 Download links shown on the setup page:
 
 - Ollama: `https://ollama.com/download`

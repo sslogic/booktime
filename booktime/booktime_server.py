@@ -261,6 +261,33 @@ def command_text(args, timeout=10):
         return {"returncode": 124, "stdout": "", "stderr": "Timed out"}
 
 
+def browse_path(mode, title, initial_dir=""):
+    import tkinter as tk
+    from tkinter import filedialog
+
+    root = tk.Tk()
+    root.withdraw()
+    root.attributes("-topmost", True)
+    try:
+        if initial_dir and not Path(initial_dir).exists():
+            initial_dir = str(Path(initial_dir).parent)
+        if mode == "file":
+            selected = filedialog.askopenfilename(
+                title=title or "Select file",
+                initialdir=initial_dir or None,
+                filetypes=[("Executable files", "*.exe"), ("All files", "*.*")],
+            )
+        else:
+            selected = filedialog.askdirectory(
+                title=title or "Select folder",
+                initialdir=initial_dir or None,
+                mustexist=False,
+            )
+        return selected or ""
+    finally:
+        root.destroy()
+
+
 def check_ollama(config):
     url = config.get("ollama_url", "http://127.0.0.1:11434").rstrip("/")
     model = config.get("ollama_model", "")
@@ -350,6 +377,8 @@ class BookTimeHandler(BaseHTTPRequestHandler):
             self.handle_import_character_png()
         elif self.path == "/api/lmstudio/install-presets":
             self.handle_install_lmstudio_presets()
+        elif self.path == "/api/browse":
+            self.handle_browse()
         else:
             self.send_error(404)
 
@@ -421,6 +450,21 @@ class BookTimeHandler(BaseHTTPRequestHandler):
             save_config(current)
             memory_root(current)
             self.send_json(200, {"ok": True, "config": current, "configPath": str(CONFIG_PATH)})
+        except Exception as exc:
+            self.send_json(400, {"ok": False, "error": str(exc)})
+
+    def handle_browse(self):
+        try:
+            body = self.read_json_body()
+            mode = body.get("mode", "dir")
+            if mode not in ("file", "dir"):
+                raise ValueError("Browse mode must be file or dir")
+            selected = browse_path(
+                mode=mode,
+                title=body.get("title", ""),
+                initial_dir=body.get("initialDir", ""),
+            )
+            self.send_json(200, {"ok": True, "path": selected})
         except Exception as exc:
             self.send_json(400, {"ok": False, "error": str(exc)})
 

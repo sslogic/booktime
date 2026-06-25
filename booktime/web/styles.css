@@ -203,6 +203,26 @@ input {
   min-height: 74px;
 }
 
+.path-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.path-row input {
+  min-width: 0;
+}
+
+.path-stack {
+  display: grid;
+  gap: 8px;
+}
+
+.path-stack .browse-button {
+  justify-self: start;
+}
+
 #preparedPrompt {
   min-height: 280px;
 }
@@ -370,6 +390,10 @@ dialog::backdrop {
 
   .picker-row,
   .picker-row:has(#characterSelect) {
+    grid-template-columns: 1fr;
+  }
+
+  .path-row {
     grid-template-columns: 1fr;
   }
 }

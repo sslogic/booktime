@@ -16,6 +16,7 @@ const reloadSetup = document.getElementById("reloadSetup");
 const checkStatus = document.getElementById("checkStatus");
 const runtimeStatus = document.getElementById("runtimeStatus");
 const installPresets = document.getElementById("installPresets");
+const browseButtons = document.querySelectorAll(".browse-button");
 
 function setStatus(text, cls) {
   setupStatus.textContent = text;
@@ -67,6 +68,61 @@ function modelStatusLines(lmstudio) {
     const command = download.ollama ? ` Ollama pull/run: ${download.ollama}` : "";
     return statusLine("LM Studio writing model", true, `${details}${command}`, download.url || "");
   });
+}
+
+function currentBrowseStart(target) {
+  const value = target.value.trim();
+  if (!value) {
+    return "";
+  }
+  if (target.tagName === "TEXTAREA") {
+    const lines = value.split("\n").map((line) => line.trim()).filter(Boolean);
+    return lines[lines.length - 1] || "";
+  }
+  return value;
+}
+
+async function browseForPath(button) {
+  const target = document.getElementById(button.dataset.target);
+  if (!target) {
+    return;
+  }
+  button.disabled = true;
+  setStatus("Waiting for path selection...", "status-working");
+  try {
+    const response = await fetch("/api/browse", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mode: button.dataset.mode || "dir",
+        title: button.dataset.title || "Select path",
+        initialDir: currentBrowseStart(target)
+      })
+    });
+    const data = await response.json();
+    if (!data.ok) {
+      setStatus(data.error || "Browse failed.", "status-error");
+      return;
+    }
+    if (data.path) {
+      if (button.dataset.append === "true") {
+        const existing = target.value.split("\n").map((line) => line.trim()).filter(Boolean);
+        if (!existing.includes(data.path)) {
+          existing.push(data.path);
+        }
+        target.value = existing.join("\n");
+      } else {
+        target.value = data.path;
+      }
+      setStatus("Path selected. Save setup when ready.", "status-ready");
+    } else {
+      setStatus("Path selection cancelled.", "status-ready");
+    }
+  } catch (error) {
+    setStatus(`Browse failed: ${error}`, "status-error");
+  } finally {
+    button.disabled = false;
+  }
 }
 
 async function loadStatus() {
@@ -155,4 +211,7 @@ saveSetup.addEventListener("click", save);
 reloadSetup.addEventListener("click", loadSetup);
 checkStatus.addEventListener("click", loadStatus);
 installPresets.addEventListener("click", installLmStudioPresets);
+browseButtons.forEach((button) => {
+  button.addEventListener("click", () => browseForPath(button));
+});
 loadSetup();
