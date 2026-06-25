@@ -241,9 +241,14 @@ def check_ollama(config):
             payload = json.loads(resp.read().decode("utf-8"))
         result["running"] = True
         names = [item.get("name") for item in payload.get("models", [])]
-        result["modelAvailable"] = model in names if model else bool(names)
+        result["modelAvailable"] = model in names if model else False
         result["models"] = names
-        result["message"] = "Ollama is running." if result["modelAvailable"] else "Ollama is running, but the configured model is not listed."
+        if not model:
+            result["message"] = "Ollama is running. Choose an assistant model in setup."
+        elif result["modelAvailable"]:
+            result["message"] = "Ollama is running."
+        else:
+            result["message"] = "Ollama is running, but the configured model is not listed."
     except Exception as exc:
         result["message"] = f"Ollama is not reachable: {exc}"
     return result

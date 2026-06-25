@@ -16,6 +16,8 @@ Run the web app:
 start_booktime.bat
 ```
 
+On a fresh clone, run setup before writing. Book Time does not ship with your machine-specific model paths or hard-coded local model names.
+
 This is the normal launcher. It attempts to:
 
 1. start Ollama
@@ -76,7 +78,7 @@ Use the setup page to configure:
 
 - Ollama URL, for example `http://127.0.0.1:11434`
 - Ollama executable, for example `C:\Users\<you>\AppData\Local\Programs\Ollama\ollama.exe`
-- Ollama assistant model for Book Time prompt-prep, for example `booktime-qwen2.5-0.5b:latest`
+- Ollama assistant model for Book Time prompt-prep, chosen from models installed in your local Ollama
 - Local assistant model folders for status reporting when you have GGUF files to import into Ollama or LM Studio
 - Ollama prompt timeout, default `45` seconds so the web page falls back instead of hanging on a slow local model
 - LM Studio executable, for example `C:\Users\<you>\AppData\Local\Programs\LM Studio\LM Studio.exe`
@@ -89,6 +91,8 @@ Download links shown on the setup page:
 
 - Ollama: `https://ollama.com/download`
 - LM Studio: `https://lmstudio.ai/download`
+
+If you have a local GGUF you want to use as the Book Time assistant, import it into Ollama first, then select the resulting Ollama model name in setup.
 
 That storage location contains transcripts, source files, `latest_seed.md`, `continuity.json`, and `custom_characters.json`.
 

@@ -3,6 +3,7 @@ import shutil
 import base64
 import struct
 import zlib
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -39,7 +40,23 @@ def load_config():
     config.setdefault("ollama_url", "http://127.0.0.1:11434")
     config.setdefault("ollama_model", "")
     config.setdefault("book_id", "booktime")
+    apply_runtime_defaults(config)
     return config
+
+
+def apply_runtime_defaults(config):
+    home = Path.home()
+    local_appdata = Path(os.environ.get("LOCALAPPDATA", home / "AppData" / "Local"))
+    if not config.get("lmstudio_conversations_dir"):
+        config["lmstudio_conversations_dir"] = str(home / ".lmstudio" / "conversations")
+    if not config.get("lmstudio_user_files_dir"):
+        config["lmstudio_user_files_dir"] = str(home / ".lmstudio" / "user-files")
+    if not config.get("lmstudio_exe_path"):
+        candidate = local_appdata / "Programs" / "LM Studio" / "LM Studio.exe"
+        config["lmstudio_exe_path"] = str(candidate) if candidate.exists() else ""
+    if not config.get("ollama_exe_path"):
+        candidate = local_appdata / "Programs" / "Ollama" / "ollama.exe"
+        config["ollama_exe_path"] = str(candidate) if candidate.exists() else ""
 
 
 def save_config(config):
