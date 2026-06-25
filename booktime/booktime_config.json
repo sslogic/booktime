@@ -5,10 +5,10 @@
   "lmstudio_exe_path": "C:\\Users\\dmayn\\AppData\\Local\\Programs\\LM Studio\\LM Studio.exe",
   "ollama_exe_path": "C:\\Users\\dmayn\\AppData\\Local\\Programs\\Ollama\\ollama.exe",
   "ollama_url": "http://127.0.0.1:11434",
-  "ollama_model": "odysseus-gemma:latest",
+  "ollama_model": "booktime-qwen2.5-0.5b:latest",
   "ollama_writer_model": "aitraining-odysseus-storyteller-file:latest",
   "assistant_model_dirs": [
-    "D:\\ai training\\modelss\\HauhauCS\\Qwen3.5-9B-Uncensored-HauhauCS-Aggressive"
+    "D:\\ai training\\modelss\\lmstudio-community\\Qwen2.5-0.5B-Instruct-GGUF"
   ],
   "memory_dir": "story_memory",
   "lmstudio_preset_dir": "lmstudio_presets",

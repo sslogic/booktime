@@ -76,7 +76,7 @@ Use the setup page to configure:
 
 - Ollama URL, for example `http://127.0.0.1:11434`
 - Ollama executable, for example `C:\Users\<you>\AppData\Local\Programs\Ollama\ollama.exe`
-- Ollama assistant model for Book Time prompt-prep, for example `odysseus-gemma:latest`
+- Ollama assistant model for Book Time prompt-prep, for example `booktime-qwen2.5-0.5b:latest`
 - Local assistant model folders for status reporting when you have GGUF files to import into Ollama or LM Studio
 - Ollama prompt timeout, default `45` seconds so the web page falls back instead of hanging on a slow local model
 - LM Studio executable, for example `C:\Users\<you>\AppData\Local\Programs\LM Studio\LM Studio.exe`
