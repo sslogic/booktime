@@ -1,4 +1,5 @@
 const seedStatus = document.getElementById("seedStatus");
+const saveForm = document.getElementById("saveForm");
 const refreshSeed = document.getElementById("refreshSeed");
 const fillStructure = document.getElementById("fillStructure");
 const chapterRequest = document.getElementById("chapterRequest");
@@ -54,8 +55,10 @@ const characterTags = document.getElementById("characterTags");
 const characterSystemPrompt = document.getElementById("characterSystemPrompt");
 const characterPostHistory = document.getElementById("characterPostHistory");
 
+const DRAFT_KEY = "bookTimePromptDraft";
 let allCharacters = [];
 let pickedCharacters = [];
+let draftCharacterNames = [];
 let pickedGenres = JSON.parse(localStorage.getItem("bookTimeGenres") || "[]");
 let pickedTones = JSON.parse(localStorage.getItem("bookTimeTones") || "[]");
 wordBank.value = localStorage.getItem("bookTimeWordBank") || "";
@@ -77,7 +80,10 @@ function renderTextChips(container, values, onRemove) {
     chip.append(document.createTextNode(value));
     const remove = document.createElement("button");
     remove.type = "button";
+    remove.className = "chip-remove";
     remove.textContent = "X";
+    remove.title = `Remove ${value}`;
+    remove.setAttribute("aria-label", `Remove ${value}`);
     remove.addEventListener("click", () => onRemove(value));
     chip.appendChild(remove);
     container.appendChild(chip);
@@ -101,6 +107,7 @@ function addTextChoice(select, input, list, renderer) {
   select.value = "";
   renderer();
   savePersistentLists();
+  saveDraft(false);
 }
 
 function addSelectedChoice(select, list, renderer) {
@@ -113,6 +120,7 @@ function addSelectedChoice(select, list, renderer) {
   select.value = "";
   renderer();
   savePersistentLists();
+  saveDraft(false);
 }
 
 function renderGenres() {
@@ -120,6 +128,7 @@ function renderGenres() {
     pickedGenres = pickedGenres.filter((item) => key(item) !== key(value));
     renderGenres();
     savePersistentLists();
+    saveDraft(false);
   });
 }
 
@@ -128,6 +137,7 @@ function renderTones() {
     pickedTones = pickedTones.filter((item) => key(item) !== key(value));
     renderTones();
     savePersistentLists();
+    saveDraft(false);
   });
 }
 
@@ -164,14 +174,34 @@ function renderPickedCharacters() {
     chip.append(document.createTextNode(card.name));
     const remove = document.createElement("button");
     remove.type = "button";
+    remove.className = "chip-remove";
     remove.textContent = "X";
+    remove.title = `Remove ${card.name}`;
+    remove.setAttribute("aria-label", `Remove ${card.name}`);
     remove.addEventListener("click", () => {
       pickedCharacters = pickedCharacters.filter((item) => characterKey(item) !== characterKey(card));
       renderPickedCharacters();
+      saveDraft(false);
     });
     chip.appendChild(remove);
     selectedCharacters.appendChild(chip);
   }
+}
+
+function restoreDraftCharacters() {
+  if (!draftCharacterNames.length || !allCharacters.length) {
+    renderPickedCharacters();
+    return;
+  }
+  const restored = [];
+  for (const name of draftCharacterNames) {
+    const card = allCharacters.find((item) => characterKey(item) === key(name));
+    if (card && !restored.some((item) => characterKey(item) === characterKey(card))) {
+      restored.push(card);
+    }
+  }
+  pickedCharacters = restored;
+  renderPickedCharacters();
 }
 
 function addCurrentCharacter() {
@@ -182,6 +212,7 @@ function addCurrentCharacter() {
   if (!pickedCharacters.some((item) => characterKey(item) === selected)) {
     pickedCharacters.push(card);
     renderPickedCharacters();
+    saveDraft(false);
   }
   characterSelect.value = "";
 }
@@ -223,6 +254,7 @@ async function loadCharacters() {
     }
     allCharacters = data.characters || [];
     renderCharacterOptions();
+    restoreDraftCharacters();
   } catch (error) {
     setStatus(`Could not load characters: ${error}`, "status-error");
   }
@@ -295,6 +327,7 @@ async function saveNewCharacter() {
     if (!pickedCharacters.some((item) => characterKey(item) === characterKey(saved))) {
       pickedCharacters.push(saved);
       renderPickedCharacters();
+      saveDraft(false);
     }
     characterModal.close();
     clearCharacterModal();
@@ -339,12 +372,63 @@ async function importCharacterPng(file) {
     if (imported && !pickedCharacters.some((item) => characterKey(item) === characterKey(imported))) {
       pickedCharacters.push(imported);
       renderPickedCharacters();
+      saveDraft(false);
     }
     setStatus(`Imported ${imported.name} from PNG card.`, "status-ready");
   } catch (error) {
     setStatus(`PNG import failed: ${error}`, "status-error");
   } finally {
     importPngInput.value = "";
+  }
+}
+
+function saveDraft(showStatus = true) {
+  const draft = {
+    ...formPayload(),
+    selectedCharacterNames: pickedCharacters.map((card) => card.name),
+    preparedPrompt: preparedPrompt.value
+  };
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+  savePersistentLists();
+  if (showStatus) {
+    setStatus("Form saved for next chapter.", "status-ready");
+  }
+}
+
+function restoreDraft() {
+  const raw = localStorage.getItem(DRAFT_KEY);
+  if (!raw) {
+    return;
+  }
+  try {
+    const draft = JSON.parse(raw);
+    chapterRequest.value = draft.chapterRequest || chapterRequest.value;
+    premise.value = draft.premise || "";
+    startingSituation.value = draft.startingSituation || "";
+    rawPrompt.value = draft.prompt || "";
+    sceneRequirements.value = draft.sceneRequirements || sceneRequirements.value;
+    wordBank.value = draft.wordBank || wordBank.value;
+    qualityRules.value = draft.qualityRules || qualityRules.value;
+    styleSample.value = draft.styleSample || styleSample.value;
+    chapterLength.value = draft.chapterLength || chapterLength.value;
+    outputFormat.value = draft.outputFormat || outputFormat.value;
+    finalRules.value = draft.finalRules || finalRules.value;
+    openingScene.value = draft.chapterStructure?.opening || "";
+    developmentScene.value = draft.chapterStructure?.development || "";
+    complicationScene.value = draft.chapterStructure?.complication || "";
+    choiceScene.value = draft.chapterStructure?.choice || "";
+    closingHook.value = draft.chapterStructure?.closingHook || "";
+    preparedPrompt.value = draft.preparedPrompt || "";
+    copyPrompt.disabled = !preparedPrompt.value;
+    pickedGenres = Array.isArray(draft.selectedGenres) ? draft.selectedGenres : pickedGenres;
+    pickedTones = Array.isArray(draft.selectedTones) ? draft.selectedTones : pickedTones;
+    draftCharacterNames = Array.isArray(draft.selectedCharacterNames)
+      ? draft.selectedCharacterNames
+      : (draft.selectedCharacters || []).map((card) => card.name).filter(Boolean);
+    renderGenres();
+    renderTones();
+  } catch (error) {
+    setStatus(`Saved form could not be loaded: ${error}`, "status-error");
   }
 }
 
@@ -428,6 +512,7 @@ async function prepare() {
     }
     preparedPrompt.value = data.preparedPrompt;
     copyPrompt.disabled = false;
+    saveDraft(false);
     setStatus(data.warning || "Prompt ready for LM Studio.", data.warning ? "status-working" : "status-ready");
   } catch (error) {
     setStatus(`Prompt preparation failed: ${error}`, "status-error");
@@ -441,12 +526,17 @@ async function copyOutput() {
   setStatus("Copied. Paste it into LM Studio.", "status-ready");
 }
 
+saveForm.addEventListener("click", () => saveDraft(true));
 refreshSeed.addEventListener("click", checkSeed);
 fillStructure.addEventListener("click", fillChapterStructure);
 addGenre.addEventListener("click", () => addTextChoice(genreSelect, newGenre, pickedGenres, renderGenres));
 addTone.addEventListener("click", () => addTextChoice(toneSelect, newTone, pickedTones, renderTones));
-genreSelect.addEventListener("change", () => addSelectedChoice(genreSelect, pickedGenres, renderGenres));
-toneSelect.addEventListener("change", () => addSelectedChoice(toneSelect, pickedTones, renderTones));
+genreSelect.addEventListener("change", () => {
+  addSelectedChoice(genreSelect, pickedGenres, renderGenres);
+});
+toneSelect.addEventListener("change", () => {
+  addSelectedChoice(toneSelect, pickedTones, renderTones);
+});
 addSelectedCharacter.addEventListener("click", addCurrentCharacter);
 importPngCard.addEventListener("click", () => importPngInput.click());
 importPngInput.addEventListener("change", () => importCharacterPng(importPngInput.files[0]));
@@ -458,6 +548,7 @@ preparePrompt.addEventListener("click", prepare);
 copyPrompt.addEventListener("click", copyOutput);
 wordBank.addEventListener("input", savePersistentLists);
 
+restoreDraft();
 renderGenres();
 renderTones();
 checkSeed();

@@ -272,18 +272,32 @@ input {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  position: relative;
   border: 1px solid var(--line);
   background: #1a1d20;
-  border-radius: 999px;
-  padding: 4px 7px 4px 9px;
+  border-radius: 6px;
+  padding: 6px 22px 6px 9px;
   color: var(--text);
+  min-height: 30px;
 }
 
-.chip button {
+.chip-remove {
+  position: absolute;
+  top: 2px;
+  right: 3px;
+  width: 16px;
+  height: 16px;
   border: 0;
   background: transparent;
   color: var(--muted);
-  padding: 0 2px;
+  padding: 0;
+  line-height: 16px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.chip-remove:hover {
+  color: var(--danger);
 }
 
 .structure-grid {
