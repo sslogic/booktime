@@ -1,0 +1,6 @@
+.book_memory_state.json
+__pycache__/
+*.pyc
+booktime/.booktime_state.json
+booktime/story_memory/
+booktime/__pycache__/

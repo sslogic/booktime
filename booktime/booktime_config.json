@@ -1,0 +1,20 @@
+{
+  "book_id": "booktime",
+  "lmstudio_conversations_dir": "C:\\Users\\dmayn\\.lmstudio\\conversations",
+  "lmstudio_user_files_dir": "C:\\Users\\dmayn\\.lmstudio\\user-files",
+  "ollama_url": "http://127.0.0.1:11434",
+  "ollama_model": "aitraining-odysseus-storyteller-file:latest",
+  "memory_dir": "story_memory",
+  "booktime_host": "127.0.0.1",
+  "booktime_port": 8765,
+  "poll_seconds": 10,
+  "max_analysis_chars": 60000,
+  "require_trigger_for_watch": true,
+  "trigger_phrases": [
+    "were working on our book",
+    "we're working on our book",
+    "working on our book",
+    "book memory start",
+    "start book memory"
+  ]
+}
