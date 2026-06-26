@@ -217,8 +217,8 @@ def compose_user_prompt(body):
 
     structure = body.get("chapterStructure") or {}
     if any(str(v or "").strip() for v in structure.values()):
-        parts.append("Chapter Structure:\n" + "\n".join(
-            f"- {label}: {structure.get(key, '').strip()}"
+        scene_items = [
+            (key, label, structure.get(key, "").strip())
             for key, label in (
                 ("opening", "Opening scene"),
                 ("development", "Development scene"),
@@ -227,7 +227,21 @@ def compose_user_prompt(body):
                 ("closingHook", "Closing hook"),
             )
             if structure.get(key, "").strip()
-        ))
+        ]
+        parts.append("MANDATORY CHAPTER STRUCTURE - WRITE IN THIS EXACT ORDER:\n" + "\n".join(
+            f"{index}. {label}: {text}"
+            for index, (_key, label, text) in enumerate(scene_items, start=1)
+        ) + "\n\nScene order rules:\n"
+        "- Do not jump to the closing hook early.\n"
+        "- Do not skip the opening, development, complication, or choice scenes.\n"
+        "- Each listed scene must appear as actual prose inside chapter_text, not as a summary or outline.\n"
+        "- Write each scene to completion before moving to the next scene.\n"
+        "- The closing hook must be the final scene only, after all prior scenes have been written.\n"
+        "- If the response limit becomes a problem, continue prose through the next natural scene break instead of summarizing skipped scenes.")
+    parts.append("NON-NEGOTIABLE COMPLETION CHECK:\n"
+        "- Before returning JSON, verify chapter_text contains the requested scenes in order.\n"
+        "- Before returning JSON, verify chapter_text is at least 3,000 words when the user requests a 3,000-4,000 word chapter.\n"
+        "- If chapter_text is shorter than requested or missing early scenes, the answer is not complete. Continue writing chapter_text instead of ending.")
     return "\n\n".join(parts).strip()
 
 

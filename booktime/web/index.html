@@ -120,7 +120,8 @@
         <textarea id="chapterLength" class="short-text">Write a full chapter of 3,000-4,000 words.
 Do not stop after a short scene.
 Do not summarize the chapter.
-The chapter must contain 4-6 complete scenes.</textarea>
+The chapter must contain 4-6 complete scenes.
+Each scene should be substantial enough that the full chapter reaches 3,000-4,000 words.</textarea>
 
         <label>Chapter Structure</label>
         <div class="structure-grid">
@@ -141,11 +142,16 @@ Use next_chapter_setup to prepare the next chapter.</textarea>
         <textarea id="finalRules">Do not write a preview, outline, excerpt, or summary.
 Write the complete chapter prose in chapter_text.
 Minimum chapter_text length: 3,000 words.
+Target chapter_text length: 3,000-4,000 words.
+Write the chapter structure scenes in order: opening, development, complication, choice, closing hook.
+Do not jump to the closing hook until the opening, development, complication, and choice scenes have been fully written as prose.
+Do not compress early scenes into recap paragraphs.
 If nearing the response limit, continue the chapter until the current scene reaches a natural chapter ending.
 
 Continue chapter_text from the exact last sentence. Keep the same JSON schema.
 
-Write Chapter as a complete chapter of 3,000-4,000 words across 4-6 scenes.</textarea>
+Write Chapter as a complete chapter of 3,000-4,000 words across 4-6 scenes.
+Before returning, check that chapter_text contains all required scenes and is at least 3,000 words.</textarea>
 
         <div class="actions">
           <button id="preparePrompt" type="button">Make LM Studio Prompt</button>
