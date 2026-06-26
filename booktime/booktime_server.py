@@ -162,6 +162,12 @@ OUTPUT FORMAT
 Return only valid JSON matching the requested schema. The actual prose goes in chapter_text."""
 
 
+def format_character_field(value):
+    if isinstance(value, list):
+        return "; ".join(str(item).strip() for item in value if str(item).strip())
+    return str(value or "").strip()
+
+
 def compose_user_prompt(body):
     parts = []
     for key, title in (
@@ -201,9 +207,9 @@ def compose_user_prompt(body):
                 ("voice_rules", "Voice rules"),
                 ("do_not_change", "Do not change"),
             ):
-                values = card.get(key) or []
-                if values:
-                    lines.append(f"  {label}: {'; '.join(values)}")
+                text = format_character_field(card.get(key))
+                if text:
+                    lines.append(f"  {label}: {text}")
             if card.get("notes"):
                 lines.append(f"  Notes: {card['notes']}")
             char_parts.append("\n".join(lines))
